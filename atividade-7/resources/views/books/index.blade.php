@@ -20,7 +20,6 @@
     <table class="table table-striped align-middle">
         <thead>
             <tr>
-                <th>Capa</th>
                 <th>ID</th>
                 <th>Título</th>
                 <th>Autor</th>
@@ -36,9 +35,6 @@
                     $coverUrl = $hasCover ? asset('storage/' . $coverPath) : asset('images/default-cover.png');
                 @endphp
                 <tr>
-                    <td style="width:70px;">
-                        <img src="{{ $coverUrl }}" alt="Capa" style="max-width:60px; max-height:80px; object-fit:cover; border:1px solid #ddd; padding:2px;">
-                    </td>
                     <td>{{ $book->id }}</td>
                     <td>{{ $book->title }}</td>
                     <td>{{ $book->author->name ?? '—' }}</td>
