@@ -55,6 +55,7 @@
         </div>
 
         <button type="submit" class="btn btn-success">Salvar</button>
+        <button type="button" class="btn btn-secondary" onclick="window.history.back()">Voltar</button>
     </form>
 </div>
 @endsection
