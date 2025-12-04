@@ -16,13 +16,20 @@ Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+// =======================
+// CATEGORIES
+// =======================
 Route::middleware(['auth'])->group(function () {
     Route::resource('categories', CategoryController::class)
         ->middleware('can:manage-categories');
 });
 
+// =======================
+// BOOKS
+// =======================
 Route::middleware(['auth'])->group(function () {
-    // rotas de criação: usam diretamente a BookPolicy::create
+
+    // Criar com ID
     Route::get('/books/create-id-number', [BookController::class, 'createWithId'])
         ->name('books.create.id')
         ->middleware('can:create,App\Models\Book');
@@ -31,6 +38,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('books.store.id')
         ->middleware('can:create,App\Models\Book');
 
+    // Criar com SELECT
     Route::get('/books/create-select', [BookController::class, 'createWithSelect'])
         ->name('books.create.select')
         ->middleware('can:create,App\Models\Book');
@@ -39,12 +47,14 @@ Route::middleware(['auth'])->group(function () {
         ->name('books.store.select')
         ->middleware('can:create,App\Models\Book');
 
-    // Rotas RESTful para index, show, edit, update, delete
-    // authorizeResource no controller vai checar view/update/delete etc.
+    // Restante controlado pela BookPolicy
     Route::resource('books', BookController::class)
         ->except(['create', 'store']);
 });
 
+// =======================
+// AUTHORS & PUBLISHERS
+// =======================
 Route::middleware(['auth'])->group(function () {
     Route::resource('authors', AuthorController::class)
         ->middleware('can:manage-authors');
@@ -53,27 +63,20 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('can:manage-publishers');
 });
 
+// =======================
+// USERS (ADMIN / BIBLIOTECARIO)
+// =======================
 Route::middleware(['auth'])->group(function () {
-    Route::get('/users', [UserController::class, 'index'])
-        ->name('users.index')
-        ->middleware('can:manage-users');
-
-    Route::get('/users/{user}/edit', [UserController::class, 'edit'])
-        ->name('users.edit')
-        ->middleware('can:manage-users');
-
-    Route::put('/users/{user}', [UserController::class, 'update'])
-        ->name('users.update')
-        ->middleware('can:manage-users');
-
-    Route::get('/users/{user}', [UserController::class, 'show'])
-        ->name('users.show');
+    Route::resource('users', UserController::class);
 });
 
+// =======================
+// BORROWING
+// =======================
 Route::middleware(['auth'])->group(function () {
+
     Route::post('/books/{book}/borrow', [BorrowingController::class, 'store'])
         ->name('books.borrow');
-       // ->middleware('can:borrow-books');
 
     Route::get('/users/{user}/borrowings', [BorrowingController::class, 'userBorrowings'])
         ->name('users.borrowings');
