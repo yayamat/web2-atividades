@@ -11,6 +11,15 @@ use App\Models\User; //
 
 class BookController extends Controller
 {
+    // Se quiser usar policies, descomente o construtor abaixo:
+    /*
+    public function __construct()
+    {
+        $this->middleware('auth')->except(['index','show']);
+        $this->authorizeResource(Book::class, 'book');
+    }
+    */
+
     // Formulário com input de ID
     public function createWithId()
     {
@@ -38,54 +47,51 @@ class BookController extends Controller
         $publishers = Publisher::all();
         $authors = Author::all();
         $categories = Category::all();
-        
 
         return view('books.create-select', compact('publishers', 'authors', 'categories'));
     }
+
     public function edit(Book $book)
-{
-    $publishers = Publisher::all();
-    $authors = Author::all();
-    $categories = Category::all();
+    {
+        $publishers = Publisher::all();
+        $authors = Author::all();
+        $categories = Category::all();
 
-    return view('books.edit', compact('book', 'publishers', 'authors', 'categories'));
-}
-public function update(Request $request, Book $book)
-{
-    $request->validate([
-        'title' => 'required|string|max:255',
-        'publisher_id' => 'required|exists:publishers,id',
-        'author_id' => 'required|exists:authors,id',
-        'category_id' => 'required|exists:categories,id',
-    ]);
+        return view('books.edit', compact('book', 'publishers', 'authors', 'categories'));
+    }
 
-    $book->update($request->all());
+    public function update(Request $request, Book $book)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'publisher_id' => 'required|exists:publishers,id',
+            'author_id' => 'required|exists:authors,id',
+            'category_id' => 'required|exists:categories,id',
+        ]);
 
-    return redirect()->route('books.index')->with('success', 'Livro atualizado com sucesso.');
-}
+        $book->update($request->all());
 
+        return redirect()->route('books.index')->with('success', 'Livro atualizado com sucesso.');
+    }
 
-public function show(Book $book)
-{
-    // Carregando autor, editora e categoria do livro com eager loading
-    $book->load(['author', 'publisher', 'category']);
+    public function show(Book $book)
+    {
+        // Carregando autor, editora e categoria do livro com eager loading
+        $book->load(['author', 'publisher', 'category']);
 
-    // Carregar todos os usuários para o formulário de empréstimo
-    $users = User::all();
+        // Carregar todos os usuários para o formulário de empréstimo
+        $users = User::all();
 
-    return view('books.show', compact('book','users'));
-}
+        return view('books.show', compact('book','users'));
+    }
 
+    public function index()
+    {
+        // Carregar os livros com autores usando eager loading e paginação
+        $books = Book::with('author')->paginate(20);
 
-public function index()
-{
-    // Carregar os livros com autores usando eager loading e paginação
-    $books = Book::with('author')->paginate(20);
-
-    return view('books.index', compact('books'));
-
-}
-
+        return view('books.index', compact('books'));
+    }
 
     // Salvar livro com input select
     public function storeWithSelect(Request $request)
@@ -101,5 +107,21 @@ public function index()
 
         return redirect()->route('books.index')->with('success', 'Livro criado com sucesso.');
     }
-}
 
+    /**
+     * Remove o livro do banco.
+     *
+     * Se você usa Policies, descomente a linha de autorização abaixo.
+     * Aceita tanto injeção de Book (model binding) quanto $id (se sua rota usar {book}).
+     */
+    public function destroy(Book $book)
+    {
+        // $this->authorize('delete', $book); // descomente se usar policy
+
+        // Se você está usando soft deletes, esse ->delete() apenas marcará como deletado.
+        // Se preferir forçar remoção física, use ->forceDelete()
+        $book->delete();
+
+        return redirect()->route('books.index')->with('success', 'Livro excluído com sucesso.');
+    }
+}
